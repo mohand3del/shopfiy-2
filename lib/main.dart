@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:practical_cubit/core/routes/app_router.dart';
-import 'package:practical_cubit/features/auth/presentation/screens/start_screen.dart';
 import 'core/di/injection_container.dart';
-import 'features/auth/presentation/cubit/auth_cubit.dart';
-import 'features/auth/presentation/screens/new_password.dart';
-import 'features/auth/presentation/screens/sign_in_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
