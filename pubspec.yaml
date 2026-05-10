@@ -24,6 +24,9 @@ dependencies:
 
   # Equatable (for state comparison)
   equatable: ^2.0.5
+
+  # Functional Either (forgot-password flow)
+  dartz: ^0.10.1
   
   flutter:
     sdk: flutter

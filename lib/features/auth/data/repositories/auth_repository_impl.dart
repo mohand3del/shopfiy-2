@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/user_entity.dart';
@@ -11,6 +12,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   const AuthRepositoryImpl(this._remoteDataSource);
 
+  static const _accessTokenKey = 'auth_token';
+  static const _refreshTokenKey = 'auth_refresh_token';
+
   @override
   Future<(UserEntity?, Failure?)> signIn({
     required String email,
@@ -22,8 +26,7 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
 
-      // Save token locally
-      await _saveToken(model.token);
+      await _saveTokens(accessToken: model.token, refreshToken: model.refreshToken);
 
       return (UserMapper.toEntity(model), null);
     } on DioException catch (e) {
@@ -41,17 +44,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      final model = await _remoteDataSource.signUp(
+      await _remoteDataSource.signUp(
         firstName: firstName,
         lastName: lastName,
         email: email,
         password: password,
       );
 
-      // Save token locally
-      await _saveToken(model.token);
-
-      return (UserMapper.toEntity(model), null);
+      return (null, null);
     } on DioException catch (e) {
       return (null, _handleDioError(e));
     } catch (e) {
@@ -59,11 +59,93 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<(bool?, Failure?)> verifyEmail({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      await _remoteDataSource.verifyEmail(email: email, otp: otp);
+      return (true, null);
+    } on DioException catch (e) {
+      return (null, _handleDioError(e));
+    } catch (e) {
+      return (null, ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<(bool?, Failure?)> validateOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      await _remoteDataSource.validateOtp(email: email, otp: otp);
+      return (true, null);
+    } on DioException catch (e) {
+      return (null, _handleDioError(e));
+    } catch (e) {
+      return (null, ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> requestPasswordReset({
+    required String email,
+  }) async {
+    try {
+      await _remoteDataSource.forgotPassword(email: email);
+      return Right(unit);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> resendOtp({required String email}) async {
+    try {
+      await _remoteDataSource.resendOtp(email: email);
+      return Right(unit);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    try {
+      await _remoteDataSource.resetPassword(
+        email: email,
+        otp: otp,
+        newPassword: newPassword,
+      );
+      return Right(unit);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
-  Future<void> _saveToken(String token) async {
+  Future<void> _saveTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    await prefs.setString(_accessTokenKey, accessToken);
+    if (refreshToken.isNotEmpty) {
+      await prefs.setString(_refreshTokenKey, refreshToken);
+    }
   }
 
   Failure _handleDioError(DioException e) {
@@ -103,6 +185,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final message = data['message']?.toString().trim();
       if (message != null && message.isNotEmpty) return message;
+
+      final detail = data['detail']?.toString().trim();
+      if (detail != null && detail.isNotEmpty) return detail;
+
+      final title = data['title']?.toString().trim();
+      if (title != null && title.isNotEmpty) return title;
     }
 
     return fallback ?? 'Something went wrong';

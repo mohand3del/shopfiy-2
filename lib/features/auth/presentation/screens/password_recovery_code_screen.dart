@@ -1,188 +1,198 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:practical_cubit/core/presentation/app_snackbar.dart';
+import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_cubit.dart';
+import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_state.dart';
+import 'package:practical_cubit/features/auth/presentation/screens/new_password.dart';
 
-// ملاحظة: هذا الكود يفترض وجود ملف صورة الخلفية باسم 'assets/images/background.png'
-// وتكون مضافة في pubspec.yaml
+import '../widgets/custom_button.dart';
+import '../widgets/custom_text_field.dart';
 
 class PasswordRecoveryCodeScreen extends StatefulWidget {
-  const PasswordRecoveryCodeScreen({super.key});
+  const PasswordRecoveryCodeScreen({super.key, required this.email});
+
+  final String email;
 
   @override
-  State<PasswordRecoveryCodeScreen> createState() => _PasswordRecoveryCodeScreenState();
+  State<PasswordRecoveryCodeScreen> createState() =>
+      _PasswordRecoveryCodeScreenState();
 }
 
 class _PasswordRecoveryCodeScreenState extends State<PasswordRecoveryCodeScreen> {
-  // للتحكم في حقول الإدخال الأربعة (النقاط الزرقاء)
-  final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
-  final List<TextEditingController> _controllers = List.generate(4, (index) => TextEditingController());
+  final _otpController = TextEditingController();
+
+  String _maskEmail(String email) {
+    final parts = email.split('@');
+    if (parts.length != 2) return email;
+    final name = parts[0];
+    final domain = parts[1];
+    if (name.length <= 2) return email;
+    final visible = name.substring(0, 2);
+    return '$visible••••@$domain';
+  }
 
   @override
   void dispose() {
-    // تنظيف الموارد
-    for (var node in _focusNodes) { node.dispose(); }
-    for (var controller in _controllers) { controller.dispose(); }
+    _otpController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // 1. الطبقة الأولى: صورة الخلفية (نفسها من الشاشة الأولى)
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/new_pass_bg.png', // <-- مسار صورتك
-              fit: BoxFit.cover,
+    return BlocConsumer<PasswordRecoveryCubit, PasswordRecoveryState>(
+      listener: (context, state) {
+        if (state is PasswordRecoveryFailure) {
+          AppSnackBar.error(context, state.message);
+        } else if (state is PasswordRecoveryCodeResent) {
+          AppSnackBar.success(
+            context,
+            'A new code has been sent to your email.',
+          );
+          context.read<PasswordRecoveryCubit>().resetFlow();
+        } else if (state is PasswordRecoveryOtpValidated) {
+          final otp = _otpController.text.trim();
+          AppSnackBar.success(context, 'Code verified.');
+          Navigator.of(context).push<void>(
+            MaterialPageRoute<void>(
+              builder: (_) => BlocProvider.value(
+                value: context.read<PasswordRecoveryCubit>(),
+                child: NewPassword(email: widget.email, otp: otp),
+              ),
             ),
-          ),
+          );
+        }
+      },
+      builder: (context, state) {
+        final loading = state is PasswordRecoveryLoading;
 
-          // 2. الطبقة الثانية: كل العناصر الأساسية
-          Column(
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: Stack(
             children: [
-              const SizedBox(height: 50), // مسافة للـ StatusBar
-              const SizedBox(height: 80), // مسافة لتنزل الـ Profile Icon
-
-              // أيقونة الملف الشخصي
-              const Center(
-                child: ProfileAvatar(),
-              ),
-
-              const SizedBox(height: 30),
-
-              // العنوان الرئيسي
-              const Text(
-                'Password Recovery',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/new_pass_bg.png',
+                  fit: BoxFit.cover,
                 ),
               ),
-
-              const SizedBox(height: 10),
-
-              // النص التوضيحي
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  'Enter 4-digits code we sent you on your phone number',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // رقم الهاتف (مموه)
-              const Text(
-                '+98*******00',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // حقول إدخال الرمز (الأربع نقاط)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 60),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(4, (index) => _buildCodeField(index)),
-                ),
-              ),
-
-              const Spacer(), // يزق اللي تحت لآخر الصفحة
-
-              // زر "Send Again" (لون وردي)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                child: TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.pink[400], // اللون الوردي
-                    minimumSize: const Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'Send Again',
+              Column(
+                children: [
+                  const SizedBox(height: 50),
+                  const SizedBox(height: 80),
+                  const Center(child: ProfileAvatar()),
+                  const SizedBox(height: 30),
+                  const Text(
+                    'Enter verification code',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'We sent a code to ${_maskEmail(widget.email)}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: CustomTextField(
+                      hint: 'Verification code',
+                      controller: _otpController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    child: TextButton(
+                      onPressed: loading
+                          ? null
+                          : () {
+                              context
+                                  .read<PasswordRecoveryCubit>()
+                                  .resendCode(widget.email);
+                            },
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xff004CFF),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Text(
+                        'Send code again',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: CustomButton(
+                        text: 'Continue',
+                        onPressed: loading
+                            ? null
+                            : () {
+                                final otp = _otpController.text.trim();
+                                if (otp.length < 4) {
+                                  AppSnackBar.error(
+                                    context,
+                                    'Enter the code from your email.',
+                                  );
+                                  return;
+                                }
+                                context.read<PasswordRecoveryCubit>().verifyOtpAndContinue(
+                                      email: widget.email,
+                                      otp: otp,
+                                    );
+                              },
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+              if (loading)
+                Container(
+                  color: Colors.black26,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF0052FF),
                     ),
                   ),
                 ),
-              ),
-
-              // زر "Cancel"
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // للرجوع للخلف
-                },
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10), // مسافة من الـ Home Bar
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  // ويدجت لحقل إدخال واحد من الرمز
-  Widget _buildCodeField(int index) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.blue[50], // لون فاتح للنقطة
-        shape: BoxShape.circle, // شكل دائري
-      ),
-      child: TextField(
-        controller: _controllers[index],
-        focusNode: _focusNodes[index],
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        maxLength: 1, // رقم واحد فقط
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue),
-        decoration: const InputDecoration(
-          counterText: "", // إخفاء عداد الحروف
-          border: InputBorder.none, // إخفاء الإطار
-        ),
-        onChanged: (value) {
-          // للانتقال تلقائياً للحقل التالي عند الإدخال
-          if (value.isNotEmpty && index < 3) {
-            _focusNodes[index + 1].requestFocus();
-          }
-          // للانتقال للحقل السابق عند الحذف
-          if (value.isEmpty && index > 0) {
-            _focusNodes[index - 1].requestFocus();
-          }
-        },
-      ),
+        );
+      },
     );
   }
 }
 
-// ويدجت أيقونة الملف الشخصي (نفسها من الكود الأول)
 class ProfileAvatar extends StatelessWidget {
-  const ProfileAvatar({Key? key}) : super(key: key);
+  const ProfileAvatar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +209,7 @@ class ProfileAvatar extends StatelessWidget {
           border: Border.all(color: Colors.grey[300]!),
         ),
         child: const Icon(
-          Icons.person,
+          Icons.mark_email_unread_outlined,
           size: 70,
           color: Colors.grey,
         ),

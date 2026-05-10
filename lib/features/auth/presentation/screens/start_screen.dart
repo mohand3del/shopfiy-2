@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:practical_cubit/core/routes/app_routes_constant.dart';
 
 import '../widgets/custom_button.dart';
-import 'create_account_screen.dart';
-import 'login_screen.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -72,7 +70,7 @@ class StartScreen extends StatelessWidget {
 
                 IconButton(
                   onPressed: () {
-                   context.pushNamed(AppRoutesConstant.registerScreen);
+                   context.pushNamed(AppRoutesConstant.loginScreen);
                   },
                   icon: Icon(
                     Icons.arrow_circle_right_rounded,

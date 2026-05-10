@@ -36,7 +36,10 @@ abstract class AppRouter {
           path: 'login',
           name: AppRoutesConstant.loginScreen,
           builder: (BuildContext context, GoRouterState state) {
-            return const LoginScreen();
+            return BlocProvider(
+              create: (context) => sl<AuthCubit>(),
+              child: const LoginScreen(),
+            );
           },
         ),
       ],

@@ -8,9 +8,7 @@ import 'package:practical_cubit/features/auth/presentation/cubit/auth_cubit.dart
 import 'package:practical_cubit/features/auth/presentation/cubit/auth_state.dart';
 
 import '../widgets/custom_text_field.dart';
-import '../widgets/build_phone_field.dart';
 import '../widgets/custom_button.dart';
-import 'login_screen.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -42,19 +40,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         bloc: context.read<AuthCubit>(),
         listener: (context, state) {
-            if (state is AuthFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
-            } 
-            else if (state is AuthSuccess){
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Account created successfully!")),
-              );
+          if (state is AuthFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          } else if (state is AuthRegistrationSuccess || state is AuthSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Account created successfully!')),
+            );
             context.pushReplacement(AppRoutesConstant.loginScreen);
-            } 
-         
-          
+          }
         },
         builder: (context, state) {
           
@@ -160,14 +155,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       width: double.infinity,
                       child: CustomButton(
                         text: 'Done',
-                        onPressed: () {
-                          context.read<AuthCubit>().signUp(
-                            firstName: _firstNameController.text,
-                            lastName: _lastNameController.text,
-                            email: _emailController.text,
-                            password: _passwordController.text,
-                          );
-                        },
+                        onPressed: isLoading
+                            ? null
+                            : () {
+                                context.read<AuthCubit>().signUp(
+                                      firstName: _firstNameController.text,
+                                      lastName: _lastNameController.text,
+                                      email: _emailController.text,
+                                      password: _passwordController.text,
+                                    );
+                              },
                       ),
                     ),
                     const SizedBox(height: 16),

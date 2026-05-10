@@ -37,3 +37,13 @@ class AuthFailure extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+// ─── Registration completed (HTTP 204, no session) ─────────────────────────
+class AuthRegistrationSuccess extends AuthState {
+  const AuthRegistrationSuccess();
+}
+
+// ─── Email verified / OTP validated (no user payload) ───────────────────────
+class AuthVerificationSuccess extends AuthState {
+  const AuthVerificationSuccess();
+}
