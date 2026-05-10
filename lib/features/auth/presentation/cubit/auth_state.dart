@@ -47,3 +47,8 @@ class AuthRegistrationSuccess extends AuthState {
 class AuthVerificationSuccess extends AuthState {
   const AuthVerificationSuccess();
 }
+
+/// Registration resend OTP succeeded (`/api/auth/resend-otp`).
+class AuthOtpResent extends AuthState {
+  const AuthOtpResent();
+}

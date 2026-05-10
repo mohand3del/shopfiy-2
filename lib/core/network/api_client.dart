@@ -12,8 +12,9 @@ class ApiClient {
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
+        // Do not set Content-Type globally: GET requests must not claim
+        // `application/json` without a body — servers often respond with 400.
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
       ),
@@ -81,6 +82,7 @@ class _LoggingInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     print('┌──────────────────────────────────────────────');
     print('│ ERROR: ${err.response?.statusCode} ${err.message}');
+    print('│ Response data: ${err.response?.data}');
     print('└──────────────────────────────────────────────');
     handler.next(err);
   }

@@ -3,6 +3,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:practical_cubit/core/presentation/app_snackbar.dart';
 import 'package:practical_cubit/core/routes/app_routes_constant.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/auth_state.dart';
@@ -27,6 +28,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
@@ -41,13 +44,19 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         bloc: context.read<AuthCubit>(),
         listener: (context, state) {
           if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+            AppSnackBar.error(context, state.message);
+          } else if (state is AuthRegistrationSuccess) {
+            final email = _emailController.text.trim();
+            AppSnackBar.success(
+              context,
+              'Account created! Check your email for a verification code.',
             );
-          } else if (state is AuthRegistrationSuccess || state is AuthSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Account created successfully!')),
+            context.pushReplacementNamed(
+              AppRoutesConstant.verifyEmailScreen,
+              extra: email,
             );
+          } else if (state is AuthSuccess) {
+            AppSnackBar.success(context, 'Welcome, ${state.user.name}!');
             context.pushReplacement(AppRoutesConstant.loginScreen);
           }
         },

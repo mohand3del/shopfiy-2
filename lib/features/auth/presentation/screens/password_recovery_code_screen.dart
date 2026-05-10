@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pinput/pinput.dart';
 import 'package:practical_cubit/core/presentation/app_snackbar.dart';
+import 'package:practical_cubit/core/presentation/auth_pinput_theme.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_cubit.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_state.dart';
 import 'package:practical_cubit/features/auth/presentation/screens/new_password.dart';
 
 import '../widgets/custom_button.dart';
-import '../widgets/custom_text_field.dart';
 
 class PasswordRecoveryCodeScreen extends StatefulWidget {
   const PasswordRecoveryCodeScreen({super.key, required this.email});
@@ -44,10 +46,11 @@ class _PasswordRecoveryCodeScreenState extends State<PasswordRecoveryCodeScreen>
         if (state is PasswordRecoveryFailure) {
           AppSnackBar.error(context, state.message);
         } else if (state is PasswordRecoveryCodeResent) {
-          AppSnackBar.success(
+          AppSnackBar.info(
             context,
             'A new code has been sent to your email.',
           );
+          _otpController.clear();
           context.read<PasswordRecoveryCubit>().resetFlow();
         } else if (state is PasswordRecoveryOtpValidated) {
           final otp = _otpController.text.trim();
@@ -103,11 +106,41 @@ class _PasswordRecoveryCodeScreenState extends State<PasswordRecoveryCodeScreen>
                   ),
                   const SizedBox(height: 28),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: CustomTextField(
-                      hint: 'Verification code',
-                      controller: _otpController,
-                      keyboardType: TextInputType.number,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Pinput(
+                        length: 6,
+                        controller: _otpController,
+                        enabled: !loading,
+                        autofocus: true,
+                        defaultPinTheme: buildAuthPinTheme(),
+                        focusedPinTheme: buildAuthPinTheme(
+                          border: Border.all(
+                            color: kAuthPinBrandBlue,
+                            width: 2,
+                          ),
+                        ),
+                        submittedPinTheme: buildAuthPinTheme(
+                          border: Border.all(
+                            color: kAuthPinBrandBlue.withValues(alpha: 0.35),
+                            width: 2,
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        separatorBuilder: (index) =>
+                            const SizedBox(width: 10),
+                        onCompleted: (pin) {
+                          if (loading) return;
+                          context.read<PasswordRecoveryCubit>().verifyOtpAndContinue(
+                                email: widget.email,
+                                otp: pin,
+                              );
+                        },
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -148,10 +181,10 @@ class _PasswordRecoveryCodeScreenState extends State<PasswordRecoveryCodeScreen>
                             ? null
                             : () {
                                 final otp = _otpController.text.trim();
-                                if (otp.length < 4) {
+                                if (otp.length != 6) {
                                   AppSnackBar.error(
                                     context,
-                                    'Enter the code from your email.',
+                                    'Enter all 6 digits of the verification code.',
                                   );
                                   return;
                                 }

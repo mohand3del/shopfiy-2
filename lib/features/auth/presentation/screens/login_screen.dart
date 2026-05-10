@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context,
             'Welcome back, ${state.user.name}!',
           );
-          context.go(AppRoutesConstant.startScreen);
+          context.goNamed(AppRoutesConstant.homeScreen);
         } else if (state is AuthFailure) {
           AppSnackBar.error(context, state.message);
         }

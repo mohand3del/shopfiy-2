@@ -10,6 +10,9 @@ import 'package:practical_cubit/features/auth/presentation/cubit/auth_cubit.dart
 import 'package:practical_cubit/features/auth/presentation/screens/create_account_screen.dart';
 import 'package:practical_cubit/features/auth/presentation/screens/login_screen.dart';
 import 'package:practical_cubit/features/auth/presentation/screens/start_screen.dart';
+import 'package:practical_cubit/features/auth/presentation/screens/verify_email_screen.dart';
+import 'package:practical_cubit/features/shop/presentation/cubit/home_cubit.dart';
+import 'package:practical_cubit/features/shop/presentation/screens/home_screen.dart';
 
 abstract class AppRouter {
 
@@ -39,6 +42,27 @@ abstract class AppRouter {
             return BlocProvider(
               create: (context) => sl<AuthCubit>(),
               child: const LoginScreen(),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutesConstant.verifyEmailScreen,
+          name: AppRoutesConstant.verifyEmailScreen,
+          builder: (BuildContext context, GoRouterState state) {
+            final email = state.extra as String? ?? '';
+            return BlocProvider(
+              create: (context) => sl<AuthCubit>(),
+              child: VerifyEmailScreen(email: email),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutesConstant.homeScreen,
+          name: AppRoutesConstant.homeScreen,
+          builder: (BuildContext context, GoRouterState state) {
+            return BlocProvider(
+              create: (context) => sl<HomeCubit>(),
+              child: const HomeScreen(),
             );
           },
         ),

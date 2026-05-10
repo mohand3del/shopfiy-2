@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'auth_state.dart';
+import '../../domain/usecases/resend_otp_usecase.dart';
 import '../../domain/usecases/sign_in_usecase.dart';
 import '../../domain/usecases/sign_up_usecase.dart';
 import '../../domain/usecases/validate_otp_usecase.dart';
@@ -10,12 +12,14 @@ class AuthCubit extends Cubit<AuthState> {
   final SignUpUseCase signUpUseCase;
   final VerifyEmailUseCase verifyEmailUseCase;
   final ValidateOtpUseCase validateOtpUseCase;
+  final ResendOtpUseCase resendOtpUseCase;
 
   AuthCubit({
     required this.signInUseCase,
     required this.signUpUseCase,
     required this.verifyEmailUseCase,
     required this.validateOtpUseCase,
+    required this.resendOtpUseCase,
   }) : super(const AuthInitial());
 
   // ─── Sign In ─────────────────────────────────────────────────────────────
@@ -79,6 +83,16 @@ class AuthCubit extends Cubit<AuthState> {
     } else {
       emit(const AuthVerificationSuccess());
     }
+  }
+
+  /// Resend OTP after registration (`/api/auth/resend-otp`).
+  Future<void> resendRegistrationOtp(String email) async {
+    emit(const AuthLoading());
+    final result = await resendOtpUseCase(email: email.trim());
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (_) => emit(const AuthOtpResent()),
+    );
   }
 
   // ─── Validate OTP (e.g. forgot-password flow) ────────────────────────────
