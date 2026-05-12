@@ -8,8 +8,7 @@ import 'package:practical_cubit/features/auth/presentation/screens/create_accoun
 import 'package:practical_cubit/features/auth/presentation/screens/login_screen.dart';
 import 'package:practical_cubit/features/auth/presentation/screens/start_screen.dart';
 import 'package:practical_cubit/features/auth/presentation/screens/verify_email_screen.dart';
-import 'package:practical_cubit/features/shop/presentation/cubit/home_cubit.dart';
-import 'package:practical_cubit/features/shop/presentation/screens/home_screen.dart';
+import 'package:practical_cubit/features/home/presentation/views/home_view.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -56,10 +55,7 @@ abstract final class AppRouter {
             path: Routes.homeScreen,
             name: Routes.homeScreen,
             builder: (BuildContext context, GoRouterState state) {
-              return BlocProvider(
-                create: (context) => getIt<HomeCubit>(),
-                child: const HomeScreen(),
-              );
+              return const HomeView();
             },
           ),
         ],

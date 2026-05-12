@@ -20,4 +20,18 @@ extension AsyncStateX<T> on AsyncState<T> {
         AsyncFailure<T>(:final failure) => failure,
         _ => null,
       };
+
+  R when<R>({
+    required R Function() initial,
+    required R Function() loading,
+    required R Function(T data) success,
+    required R Function(dynamic failure) failure,
+  }) {
+    return switch (this) {
+      AsyncInitial<T>() => initial(),
+      AsyncLoading<T>() => loading(),
+      AsyncSuccess<T>(:final data) => success(data),
+      AsyncFailure<T>(:final failure) => failure(failure),
+    };
+  }
 }
