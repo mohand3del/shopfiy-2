@@ -1,6 +1,6 @@
 import '../entities/user_entity.dart';
 import '../repositories/auth_repository.dart';
-import '../../../../core/error/failures.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 
 class SignUpUseCase {
   final AuthRepository _repository;

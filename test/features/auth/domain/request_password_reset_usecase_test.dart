@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:practical_cubit/core/error/failures.dart';
+import 'package:practical_cubit/core/errors/error_model.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 import 'package:practical_cubit/features/auth/domain/entities/user_entity.dart';
 import 'package:practical_cubit/features/auth/domain/repositories/auth_repository.dart';
 import 'package:practical_cubit/features/auth/domain/usecases/request_password_reset_usecase.dart';
@@ -76,14 +77,23 @@ void main() {
 
   test('returns Left when repository fails', () async {
     final useCase = RequestPasswordResetUseCase(
-      _Repo(resetResult: Left(const ValidationFailure('invalid'))),
+      _Repo(
+        resetResult: Left(
+          Failure(
+            error: ErrorModel(statusCode: 422, message: 'invalid'),
+          ),
+        ),
+      ),
     );
 
     final result = await useCase(email: 'x@example.com');
 
     expect(result.isLeft(), isTrue);
     result.fold(
-      (f) => expect(f, isA<ValidationFailure>()),
+      (f) {
+        expect(f, isA<Failure>());
+        expect(f.message, 'invalid');
+      },
       (_) => fail('expected Left'),
     );
   });

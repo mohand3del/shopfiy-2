@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../entities/user_entity.dart';
-import '../../../../core/error/failures.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 
 // Abstract contract — the domain layer only knows about this interface,
 // NOT the implementation detail (Dio, HTTP, etc.)

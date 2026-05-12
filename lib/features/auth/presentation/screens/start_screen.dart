@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:practical_cubit/core/routes/app_routes_constant.dart';
+import 'package:practical_cubit/core/routing/routes.dart';
 
 import '../widgets/custom_button.dart';
 
@@ -54,7 +54,7 @@ class StartScreen extends StatelessWidget {
             CustomButton(
               text: "Let's get started",
               onPressed: () {
-               context.pushReplacementNamed(AppRoutesConstant.registerScreen);
+               context.pushReplacementNamed(Routes.registerScreen);
               },
             ),
             SizedBox(height: 24),
@@ -70,7 +70,7 @@ class StartScreen extends StatelessWidget {
 
                 IconButton(
                   onPressed: () {
-                   context.pushNamed(AppRoutesConstant.loginScreen);
+                   context.pushNamed(Routes.loginScreen);
                   },
                   icon: Icon(
                     Icons.arrow_circle_right_rounded,

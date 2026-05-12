@@ -1,4 +1,4 @@
-import '../../../../core/error/failures.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 import '../entities/product_entity.dart';
 import '../repositories/shop_repository.dart';
 

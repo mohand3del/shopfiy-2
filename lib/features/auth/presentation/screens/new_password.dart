@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:practical_cubit/core/presentation/app_snackbar.dart';
-import 'package:practical_cubit/core/routes/app_routes_constant.dart';
+import 'package:practical_cubit/core/enums/snack_bar_type.dart';
+import 'package:practical_cubit/core/extensions/show_snack_bar_extension.dart';
+import 'package:practical_cubit/core/routing/routes.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_cubit.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_state.dart';
 
@@ -39,13 +40,13 @@ class _NewPasswordState extends State<NewPassword> {
     return BlocConsumer<PasswordRecoveryCubit, PasswordRecoveryState>(
       listener: (context, state) {
         if (state is PasswordRecoveryFailure) {
-          AppSnackBar.error(context, state.message);
+          context.showCustomSnackBar(state.message, type: SnackBarType.error);
         } else if (state is PasswordRecoveryPasswordChanged) {
-          AppSnackBar.success(
-            context,
+          context.showCustomSnackBar(
             'Your password has been updated. Sign in with your new password.',
+            type: SnackBarType.success,
           );
-          context.go(AppRoutesConstant.loginScreen);
+          context.go(Routes.loginScreen);
         }
       },
       builder: (context, state) {
@@ -127,16 +128,16 @@ class _NewPasswordState extends State<NewPassword> {
                                 final p1 = _newPassController.text;
                                 final p2 = _confirmPassController.text;
                                 if (p1.length < 6) {
-                                  AppSnackBar.error(
-                                    context,
+                                  context.showCustomSnackBar(
                                     'Password must be at least 6 characters.',
+                                    type: SnackBarType.error,
                                   );
                                   return;
                                 }
                                 if (p1 != p2) {
-                                  AppSnackBar.error(
-                                    context,
+                                  context.showCustomSnackBar(
                                     'Passwords do not match.',
+                                    type: SnackBarType.error,
                                   );
                                   return;
                                 }

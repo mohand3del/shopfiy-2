@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:practical_cubit/core/error/failures.dart';
+import 'package:practical_cubit/core/errors/error_model.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 import 'package:practical_cubit/features/auth/domain/entities/user_entity.dart';
 import 'package:practical_cubit/features/auth/domain/repositories/auth_repository.dart';
 import 'package:practical_cubit/features/auth/domain/usecases/verify_email_usecase.dart';
@@ -72,13 +73,19 @@ void main() {
 
   test('VerifyEmailUseCase returns failure from repository', () async {
     final repo = _FakeAuthRepository(
-      verifyResult: (null, const ValidationFailure('bad otp')),
+      verifyResult: (
+        null,
+        Failure(
+          error: ErrorModel(statusCode: 422, message: 'bad otp'),
+        ),
+      ),
     );
     final useCase = VerifyEmailUseCase(repo);
 
     final result = await useCase(email: 'a@b.com', otp: '000000');
 
     expect(result.$1, isNull);
-    expect(result.$2, isA<ValidationFailure>());
+    expect(result.$2, isA<Failure>());
+    expect(result.$2?.message, 'bad otp');
   });
 }

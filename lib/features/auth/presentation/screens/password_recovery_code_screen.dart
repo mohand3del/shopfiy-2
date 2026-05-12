@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pinput/pinput.dart';
-import 'package:practical_cubit/core/presentation/app_snackbar.dart';
+import 'package:practical_cubit/core/enums/snack_bar_type.dart';
+import 'package:practical_cubit/core/extensions/show_snack_bar_extension.dart';
 import 'package:practical_cubit/core/presentation/auth_pinput_theme.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_cubit.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/password_recovery_state.dart';
@@ -44,17 +45,17 @@ class _PasswordRecoveryCodeScreenState extends State<PasswordRecoveryCodeScreen>
     return BlocConsumer<PasswordRecoveryCubit, PasswordRecoveryState>(
       listener: (context, state) {
         if (state is PasswordRecoveryFailure) {
-          AppSnackBar.error(context, state.message);
+          context.showCustomSnackBar(state.message, type: SnackBarType.error);
         } else if (state is PasswordRecoveryCodeResent) {
-          AppSnackBar.info(
-            context,
+          context.showCustomSnackBar(
             'A new code has been sent to your email.',
+            type: SnackBarType.info,
           );
           _otpController.clear();
           context.read<PasswordRecoveryCubit>().resetFlow();
         } else if (state is PasswordRecoveryOtpValidated) {
           final otp = _otpController.text.trim();
-          AppSnackBar.success(context, 'Code verified.');
+          context.showCustomSnackBar('Code verified.', type: SnackBarType.success);
           Navigator.of(context).push<void>(
             MaterialPageRoute<void>(
               builder: (_) => BlocProvider.value(
@@ -182,9 +183,9 @@ class _PasswordRecoveryCodeScreenState extends State<PasswordRecoveryCodeScreen>
                             : () {
                                 final otp = _otpController.text.trim();
                                 if (otp.length != 6) {
-                                  AppSnackBar.error(
-                                    context,
+                                  context.showCustomSnackBar(
                                     'Enter all 6 digits of the verification code.',
+                                    type: SnackBarType.error,
                                   );
                                   return;
                                 }

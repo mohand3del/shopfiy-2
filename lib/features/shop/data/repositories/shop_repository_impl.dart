@@ -1,14 +1,16 @@
 import 'package:dio/dio.dart';
+import 'package:practical_cubit/core/errors/dio_error_handler.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../domain/repositories/shop_repository.dart';
 import '../datasources/shop_remote_datasource.dart';
 import '../mappers/product_mapper.dart';
-import '../../../../core/error/failures.dart';
 
 class ShopRepositoryImpl implements ShopRepository {
   final ShopRemoteDataSource _remote;
+  final DioErrorHandler _dioErrorHandler;
 
-  const ShopRepositoryImpl(this._remote);
+  const ShopRepositoryImpl(this._remote, this._dioErrorHandler);
 
   @override
   Future<(List<ProductEntity>?, Failure?)> getProducts({
@@ -26,37 +28,9 @@ class ShopRepositoryImpl implements ShopRepository {
           models.map(ProductMapper.toEntity).toList(growable: false);
       return (entities, null);
     } on DioException catch (e) {
-      return (null, _mapDio(e));
+      return (null, _dioErrorHandler.handle(e));
     } catch (e) {
-      return (null, ServerFailure(e.toString()));
+      return (null, _dioErrorHandler.handle(e));
     }
-  }
-
-  Failure _mapDio(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.receiveTimeout:
-        return const NetworkFailure('Connection timed out. Check your internet.');
-      case DioExceptionType.connectionError:
-        return const NetworkFailure('No internet connection.');
-      default:
-        final statusCode = e.response?.statusCode;
-        final message = _messageFromResponse(e.response?.data, e.message);
-        if (statusCode == 401) return UnauthorizedFailure(message);
-        if (statusCode == 400 || statusCode == 422) {
-          return ValidationFailure(message);
-        }
-        return ServerFailure(message);
-    }
-  }
-
-  String _messageFromResponse(dynamic data, String? fallback) {
-    if (data is Map<String, dynamic>) {
-      final m = data['message']?.toString().trim();
-      if (m != null && m.isNotEmpty) return m;
-      final d = data['detail']?.toString().trim();
-      if (d != null && d.isNotEmpty) return d;
-    }
-    return fallback ?? 'Something went wrong';
   }
 }

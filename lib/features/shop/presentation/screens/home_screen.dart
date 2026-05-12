@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:practical_cubit/core/presentation/app_snackbar.dart';
+import 'package:practical_cubit/core/enums/snack_bar_type.dart';
+import 'package:practical_cubit/core/extensions/show_snack_bar_extension.dart';
 import 'package:practical_cubit/features/shop/domain/entities/product_entity.dart';
 import 'package:practical_cubit/features/shop/presentation/cubit/home_cubit.dart';
 import 'package:practical_cubit/features/shop/presentation/cubit/home_state.dart';
@@ -25,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocConsumer<HomeCubit, HomeState>(
       listener: (context, state) {
         if (state is HomeFailure) {
-          AppSnackBar.error(context, state.message);
+          context.showCustomSnackBar(state.message, type: SnackBarType.error);
         }
       },
       builder: (context, state) {

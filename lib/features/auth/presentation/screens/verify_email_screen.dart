@@ -3,9 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
-import 'package:practical_cubit/core/presentation/app_snackbar.dart';
+import 'package:practical_cubit/core/enums/snack_bar_type.dart';
+import 'package:practical_cubit/core/extensions/show_snack_bar_extension.dart';
 import 'package:practical_cubit/core/presentation/auth_pinput_theme.dart';
-import 'package:practical_cubit/core/routes/app_routes_constant.dart';
+import 'package:practical_cubit/core/routing/routes.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/auth_state.dart';
 
@@ -47,17 +48,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthFailure) {
-          AppSnackBar.error(context, state.message);
+          context.showCustomSnackBar(state.message, type: SnackBarType.error);
         } else if (state is AuthVerificationSuccess) {
-          AppSnackBar.success(
-            context,
+          context.showCustomSnackBar(
             'Email verified! You can sign in now.',
+            type: SnackBarType.success,
           );
-          context.go(AppRoutesConstant.loginScreen);
+          context.go(Routes.loginScreen);
         } else if (state is AuthOtpResent) {
-          AppSnackBar.info(
-            context,
+          context.showCustomSnackBar(
             'We sent a new code to your email.',
+            type: SnackBarType.info,
           );
           _otpController.clear();
           context.read<AuthCubit>().reset();
@@ -169,16 +170,16 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                             : () {
                                 final otp = _otpController.text.trim();
                                 if (emailTrimmed.isEmpty) {
-                                  AppSnackBar.error(
-                                    context,
+                                  context.showCustomSnackBar(
                                     'Missing email. Go back and register again.',
+                                    type: SnackBarType.error,
                                   );
                                   return;
                                 }
                                 if (otp.length != 6) {
-                                  AppSnackBar.error(
-                                    context,
+                                  context.showCustomSnackBar(
                                     'Enter all 6 digits of the verification code.',
+                                    type: SnackBarType.error,
                                   );
                                   return;
                                 }
@@ -192,7 +193,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       Center(
                         child: TextButton(
                           onPressed: () =>
-                              context.go(AppRoutesConstant.loginScreen),
+                              context.go(Routes.loginScreen),
                           child: const Text(
                             'Back to sign in',
                             style: TextStyle(

@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/error/failures.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 import '../repositories/auth_repository.dart';
 
 class RequestPasswordResetUseCase {

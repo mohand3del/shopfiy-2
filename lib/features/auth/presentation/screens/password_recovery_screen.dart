@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:practical_cubit/core/presentation/app_snackbar.dart';
-import 'package:practical_cubit/core/di/injection_container.dart';
+import 'package:practical_cubit/core/di/service_locator.dart';
+import 'package:practical_cubit/core/enums/snack_bar_type.dart';
+import 'package:practical_cubit/core/extensions/show_snack_bar_extension.dart';
 import 'package:practical_cubit/features/auth/domain/usecases/request_password_reset_usecase.dart';
 import 'package:practical_cubit/features/auth/domain/usecases/resend_otp_usecase.dart';
 import 'package:practical_cubit/features/auth/domain/usecases/reset_password_usecase.dart';
@@ -46,12 +47,12 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
     return BlocConsumer<PasswordRecoveryCubit, PasswordRecoveryState>(
       listener: (context, state) {
         if (state is PasswordRecoveryFailure) {
-          AppSnackBar.error(context, state.message);
+          context.showCustomSnackBar(state.message, type: SnackBarType.error);
         } else if (state is PasswordRecoveryResetEmailSent) {
           final email = _emailController.text.trim();
-          AppSnackBar.info(
-            context,
+          context.showCustomSnackBar(
             'If this email is registered, you will receive a code shortly.',
+            type: SnackBarType.info,
           );
           context.read<PasswordRecoveryCubit>().resetFlow();
           _goToCodeStep(context, email);
@@ -127,9 +128,9 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                             : () {
                                 final email = _emailController.text.trim();
                                 if (email.isEmpty) {
-                                  AppSnackBar.error(
-                                    context,
+                                  context.showCustomSnackBar(
                                     'Please enter your email address.',
+                                    type: SnackBarType.error,
                                   );
                                   return;
                                 }
@@ -181,10 +182,10 @@ void openPasswordRecoveryFlow(BuildContext context) {
     MaterialPageRoute<void>(
       builder: (_) => BlocProvider(
         create: (_) => PasswordRecoveryCubit(
-          requestPasswordResetUseCase: sl<RequestPasswordResetUseCase>(),
-          resendOtpUseCase: sl<ResendOtpUseCase>(),
-          resetPasswordUseCase: sl<ResetPasswordUseCase>(),
-          validateOtpUseCase: sl<ValidateOtpUseCase>(),
+          requestPasswordResetUseCase: getIt<RequestPasswordResetUseCase>(),
+          resendOtpUseCase: getIt<ResendOtpUseCase>(),
+          resetPasswordUseCase: getIt<ResetPasswordUseCase>(),
+          validateOtpUseCase: getIt<ValidateOtpUseCase>(),
         ),
         child: const PasswordRecoveryScreen(),
       ),

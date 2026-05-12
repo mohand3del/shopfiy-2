@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:practical_cubit/core/presentation/app_snackbar.dart';
-import 'package:practical_cubit/core/routes/app_routes_constant.dart';
+import 'package:practical_cubit/core/enums/snack_bar_type.dart';
+import 'package:practical_cubit/core/extensions/show_snack_bar_extension.dart';
+import 'package:practical_cubit/core/routing/routes.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:practical_cubit/features/auth/presentation/cubit/auth_state.dart';
 import 'package:practical_cubit/features/auth/presentation/screens/password_recovery_screen.dart';
@@ -33,7 +34,10 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     if (email.isEmpty || password.isEmpty) {
-      AppSnackBar.error(context, 'Please enter email and password.');
+      context.showCustomSnackBar(
+        'Please enter email and password.',
+        type: SnackBarType.error,
+      );
       return;
     }
     context.read<AuthCubit>().signIn(email: email, password: password);
@@ -44,13 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
-          AppSnackBar.success(
-            context,
+          context.showCustomSnackBar(
             'Welcome back, ${state.user.name}!',
+            type: SnackBarType.success,
           );
-          context.goNamed(AppRoutesConstant.homeScreen);
+          context.goNamed(Routes.homeScreen);
         } else if (state is AuthFailure) {
-          AppSnackBar.error(context, state.message);
+          context.showCustomSnackBar(state.message, type: SnackBarType.error);
         }
       },
       builder: (context, state) {

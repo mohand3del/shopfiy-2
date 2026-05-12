@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:practical_cubit/core/error/failures.dart';
+import 'package:practical_cubit/core/errors/failure.dart';
 import 'package:practical_cubit/features/shop/domain/entities/product_entity.dart';
 import 'package:practical_cubit/features/shop/domain/repositories/shop_repository.dart';
 import 'package:practical_cubit/features/shop/domain/usecases/get_products_usecase.dart';

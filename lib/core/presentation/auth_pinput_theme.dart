@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
 
-/// Shared styling for [Pinput] in auth flows (verify email, password recovery, etc.).
 const kAuthPinBrandBlue = Color(0xff004CFF);
 const kAuthPinFieldBg = Color(0xFFF7F8F9);
 
